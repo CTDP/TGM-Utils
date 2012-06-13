@@ -255,8 +255,7 @@ public class TGMParser extends AbstractIniParser {
 			realtime.internalGasSpecificHeatAtConstantVolume.put(list.get(0), list.get(1));
 			break;
 		case "TemporaryAbrasion":
-//			TODO Parse 1e-10
-//			realtime.temporaryAbrasion = Integer.valueOf(value);
+			realtime.temporaryAbrasion = Float.valueOf(value);
 			break;
 		}
 		

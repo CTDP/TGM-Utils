@@ -280,7 +280,7 @@ public class TGMFile {
 		 */
 		public Map<Integer, Integer> internalGasSpecificHeatAtConstantVolume = new HashMap<>();
 		
-		public int	temporaryAbrasion; //=1e-10 TODO fix parsing
+		public float	temporaryAbrasion; //=1e-10 TODO fix parsing
 	}
 
 	/**

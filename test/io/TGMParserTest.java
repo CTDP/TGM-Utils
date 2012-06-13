@@ -1,9 +1,15 @@
 package io;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
+
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import net.ctdp.tgmutils.io.TGMParser;
 import net.ctdp.tgmutils.models.TGMFile;
@@ -17,8 +23,6 @@ import net.ctdp.tgmutils.models.TGMFile.Realtime;
 
 import org.junit.Test;
 import org.openmali.vecmath2.Vector3f;
-
-import static org.junit.Assert.*;
 
 public class TGMParserTest {
 
@@ -88,6 +92,7 @@ public class TGMParserTest {
 		
 		assertNotNull("Bins", lookupData.bins);
 		assertTrue("Bins Type", lookupData.bins instanceof List);
+		assertEquals("number of Bins", 1896, lookupData.bins.size());
 		String firstbin = "be645b883fef93d5b7b403c23fe43470b7b403d53fe43470e704a27bbc4088ab0d3aa411bc7cd4e8c998faab3fee8696eb9e86f73fe2ecbbeb9e86f33fe2ecbb";
 		assertEquals("first bin", firstbin, lookupData.bins.get(0));
 		
@@ -99,7 +104,81 @@ public class TGMParserTest {
 		assertNotNull("NumLayers", qsa.numLayers);
 		assertEquals("NumLayers", 2, qsa.numLayers);
 		
-		// TODO test many more
+		assertNotNull("NumSections", qsa.numSections);
+		assertEquals("NumSections", 100, qsa.numSections);
+	
+		//	RimVolume=0.014
+		assertNotNull("RimVolume", qsa.rimVolume);
+		assertEquals("RimVolume", 0.014, qsa.rimVolume, 0.0001);
+		
+		//	RealtimeCamberLimit=45
+		assertNotNull("RealtimeCamberLimit", qsa.realtimeCamberLimit);
+		assertEquals("RealtimeCamberLimit", 45, qsa.realtimeCamberLimit);
+		
+		//	GaugePressure=0
+		//	GaugePressure=150000
+		//	GaugePressure=300000
+		assertNotNull("GaugePressure list not null", qsa.gaugePressures);
+		assertTrue("GaugePressure", qsa.gaugePressures instanceof List);
+		assertEquals("GaugePressure count", 3, qsa.gaugePressures.size());
+		assertEquals("GaugePressure values", 0, (int)qsa.gaugePressures.get(0));
+		assertEquals("GaugePressure values", 150000, (int)qsa.gaugePressures.get(1));
+		assertEquals("GaugePressure values", 300000, (int)qsa.gaugePressures.get(2));
+		
+		
+		//	CarcassTemperature=273.15
+		//	CarcassTemperature=373.15
+		
+		assertNotNull("CarcassTemperature list not null", qsa.carcassTemperatures);
+		assertTrue("CarcassTemperature", qsa.carcassTemperatures instanceof List);
+		assertEquals("CarcassTemperature count", 2, qsa.carcassTemperatures.size());
+		assertEquals("CarcassTemperature values", 273.15, (double)qsa.carcassTemperatures.get(0), 0.0001);
+		assertEquals("CarcassTemperature values", 373.15, (double)qsa.carcassTemperatures.get(1), 0.0001);
+		
+		//	RotationSquared=0
+		//	RotationSquared=80000
+		assertNotNull("RotationSquared list not null", qsa.rotationSquareds);
+		assertTrue("RotationSquared", qsa.rotationSquareds instanceof List);
+		assertEquals("RotationSquared count", 2, qsa.rotationSquareds.size());
+		assertEquals("RotationSquared values", 0, (int)qsa.rotationSquareds.get(0));
+		assertEquals("RotationSquared values", 80000, (int)qsa.rotationSquareds.get(1));
+		
+		
+		//	NumNodes=31
+		assertNotNull("NumNodes", qsa.numNodes);
+		assertEquals("NumNodes", 31, qsa.numNodes);
+		
+		//	VolumeLoad=0
+		assertNotNull("VolumeLoad", qsa.volumeLoad);
+		assertEquals("VolumeLoad", 0, qsa.volumeLoad);
+		
+		//	LoadCamber=0
+		assertNotNull("LoadCamber", qsa.loadCamber);
+		assertEquals("LoadCamber", 0, qsa.loadCamber);
+		//	LoadInclination=0
+		assertNotNull("LoadInclination", qsa.loadCamber);
+		assertEquals("LoadInclination", 0, qsa.loadCamber);
+		//	LoadDeflection=0
+		assertNotNull("LoadDeflection", qsa.loadCamber);
+		assertEquals("LoadDeflection", 0, qsa.loadCamber);
+		
+		//	TotalMass=10.558957270550053
+		assertNotNull("TotalMass", qsa.totalMass);
+		assertEquals("TotalMass", 10.558957270550053, qsa.totalMass, 0.0001);
+		
+		//	TotalInertiaStandard=(0.9865952331376638,0.629654560048139,0.6296545600481429)
+		assertDoubleList("TotalInertiaStandard", 
+				"0.9865952331376638,0.629654560048139,0.6296545600481429", 
+				qsa.totalInertiaStandards);
+		
+		//	RingMass=9.873669634213842
+		assertNotNull("RingMass", qsa.ringMass);
+		assertEquals("RingMass", 9.873669634213842, qsa.ringMass, 0.0001);
+		
+		//	RingInertiaStandard=(0.9536807920631629,0.5898999023566385,0.5898999023566396)
+		assertDoubleList("RingInertiaStandard", 
+				"0.9536807920631629,0.5898999023566385,0.5898999023566396", 
+				qsa.ringInertiaStandards);
 	}
 
 	private static void assertNode(Node node) {
@@ -111,24 +190,30 @@ public class TGMParserTest {
 		assertEquals("geometry Y", -0.182, node.geometry.y(), 0.0001);
 		assertEquals("geometry T", 0.006, node.geometry.z(), 0.0001);
 
-		// TODO bulkMaterial
-		assertNotNull("Material list not null", node.treadMaterial);
+		assertNotNull("BulkMaterial list not null", node.bulkMaterial);
+		assertTrue("BulkMaterial", node.bulkMaterial instanceof List);
+		assertEquals("BulkMaterial count", 2, node.bulkMaterial.size());
+		assertTrue("BulkMaterial list empty", node.bulkMaterial.size() > 0);
+		assertMaterial("first BulkMaterial", "273.15,925,16000000,0.47,-1,1250,3.7", node.bulkMaterial.get(0));
+		
+		assertNotNull("TreadMaterial list not null", node.treadMaterial);
 		assertTrue("TreadMaterial", node.treadMaterial instanceof List);
-		assertTrue("Material list empty", node.treadMaterial.size() > 0);
+		assertTrue("TreadMaterial list empty", node.treadMaterial.size() > 0);
 		assertEquals("TreadMaterial count", 2, node.treadMaterial.size());
-		assertMaterial("TreadMaterial", "273.15,925,9500000,0.47,-1,2000,0.172", node.treadMaterial.get(0));
+		assertMaterial("first TreadMaterial", "273.15,925,9500000,0.47,-1,2000,0.172", node.treadMaterial.get(0));
 
 		// AnisoCarcassConductivityMult=(1.5,1,1.1)
 		assertTrue("anisoCarcassConductivityMult should be of type Vector3f", node.anisoCarcassConductivityMult instanceof Vector3f);
 		assertEquals("anisoCarcassConductivityMult X", 1.5, node.anisoCarcassConductivityMult.x(), 0.0001);
-		assertEquals("anisoCarcassConductivityMult X", 1, node.anisoCarcassConductivityMult.y(), 0.0001);
-		assertEquals("anisoCarcassConductivityMult X", 1.1, node.anisoCarcassConductivityMult.z(), 0.0001);
+		assertEquals("anisoCarcassConductivityMult Y", 1, node.anisoCarcassConductivityMult.y(), 0.0001);
+		assertEquals("anisoCarcassConductivityMult Z", 1.1, node.anisoCarcassConductivityMult.z(), 0.0001);
 
 		// TreadDepth=0.003
-		//		assertTrue("TreadDepth should be of type Double", Double.class, node.treadDepth.getClass);
+//		assertTrue("TreadDepth should be of type Double", Double.class, node.treadDepth.getClass);
 		assertEquals("TreadDepth", 0.003, node.treadDepth, 0.0001);
 
 		// RingAndRim=(0,1000000000)
+		assertDoubleList("RingAndRim", "0,1000000000", node.ringAndRim);
 		
 		
 		assertNotNull("Ply List", node.plies);
@@ -157,7 +242,7 @@ public class TGMParserTest {
 	private static void assertMaterial(final String message, final String expected, final Material material) {
 		assertTrue(message+" should be of type Material", material instanceof Material);
 		
-		//		assertEquals("material temperature", 1.5, material.temperature, 0.0001);
+		assertEquals("material temperature", 273.15, material.temperature, 0.0001);
 	}
 
 	public static void assertRealtime(Realtime realtime) {
@@ -218,31 +303,49 @@ public class TGMParserTest {
 		assertNotNull("TireRadiationEmissivity", realtime.tireRadiationEmissivity);
 		assertEquals("TireRadiationEmissivity", 0.90, realtime.tireRadiationEmissivity, 0.0001);
 		
-		/*assertDoubleList("InternalGasSpecificHeatAtConstantVolume", "1300.0,0.010", realtime.internalGasSpecificHeatAtConstantVolume);
-		
-	case "InternalGasSpecificHeatAtConstantVolume":
-		List<Integer> list = parseIntegerList(value);
-		realtime.internalGasSpecificHeatAtConstantVolume.put(list.get(0), list.get(1));
-		break;*/
+		Map<Integer, Integer> expectedGasSpecificHeat = new HashMap<>();
+		expectedGasSpecificHeat.put(250,716);
+		expectedGasSpecificHeat.put(300,718);
+		expectedGasSpecificHeat.put(350,721);
+		expectedGasSpecificHeat.put(400,726);
+		expectedGasSpecificHeat.put(450,733);
+		expectedGasSpecificHeat.put(500,742);
+		assertHashMap("InternalGasSpecificHeatAtConstantVolume", expectedGasSpecificHeat, realtime.internalGasSpecificHeatAtConstantVolume);
 		
 		assertNotNull("TemporaryAbrasion", realtime.temporaryAbrasion);
-//		TODO assertEquals("TemporaryAbrasion", 10, realtime.temporaryAbrasion, 0.0001);
+		 assertEquals("TemporaryAbrasion", 1.0E-10, realtime.temporaryAbrasion, 0.0001);
 	}
 
+	private static void assertHashMap(String message, Map<Integer, Integer> expected, 
+			Map<Integer, Integer> actual) {
+		int expLength = expected.size();
+		int actLength = actual.size();
+		assertEquals("hashmap length", expLength, actLength);
+		
+		for (Integer key : expected.keySet()) {
+			Integer value = expected.get(key);
+			assertTrue("actual hashmap has key", actual.containsKey(key));
+			assertEquals("actual hasmap has key with same value", value, actual.get(key));
+			
+		}
+		
+		
+	}
 
 	private static void assertDoubleList(String message, String expected,
 			List<Double> list) {
-		assertNotNull(message, list);
+		
+		assertNotNull(message + " not null", list);
 		String[] values = expected.split(",");
 		assertEquals(message+" list size", values.length, list.size());
 		for (int i = 0; i < values.length; i++) {
 			Double value = Double.valueOf(values[i]);
 			assertEquals(message+" list value", value, list.get(i));
 		}
-		
 	}
 
-	/** @param filePath the name of the file to open. Not sure if it can accept URLs or just filenames. Path handling could be better, and buffer sizes are hardcoded
+	/** 
+	 * @param filePath the name of the file to open. Not sure if it can accept URLs or just filenames. Path handling could be better, and buffer sizes are hardcoded
 	 */ 
 	private static String readFileAsString(String filePath)
 			throws java.io.IOException{
